@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "Duolingo Esperanto Keyboard",
+  "version": "1.0.0",
+  "description": "Maps an English keyboard to Ubuntu's Esperanto layout during Duolingo Esperanto challenges.",
+  "action": {
+    "default_title": "Toggle Esperanto keyboard",
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.duolingo.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_start"
+    }
+  ]
+}
