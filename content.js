@@ -4,7 +4,7 @@
   const HEADER_SELECTOR = 'h1[data-test="challenge-header"]';
   const KEYBOARD_BUTTON_SELECTOR = 'button[data-test="player-toggle-keyboard"]';
   const ESPERANTO_CHARACTERS = /[ĉĝĥĵŝŭ]/i;
-  const ACTIVE_HEADER = /esperanto|^type the missing words?$/i;
+  const ACTIVE_HEADER = /esperanto|^type the missing words?$|^complete the sentence$/i;
 
   // Ubuntu's xkb Esperanto "basic" layout on a US QWERTY keyboard.
   const KEY_MAP = new Map([

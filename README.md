@@ -26,7 +26,7 @@ The extension is enabled automatically when the Duolingo challenge header
 `h1[data-test="challenge-header"]` contains `Esperanto`, the
 `button[data-test="player-toggle-keyboard"]` (“Use keyboard” button) is
 present, or an Esperanto special-character button (`ĉ`, `ĝ`, `ĥ`, `ĵ`, `ŝ`,
-or `ŭ`) is visible. It also activates for the exact “Type the missing word” or
-“Type the missing words” challenge heading.
+or `ŭ`) is visible. It also activates for the exact “Type the missing word”,
+“Type the missing words”, or “Complete the sentence” challenge heading.
 
 Use the extension toolbar button to toggle it off temporarily.
