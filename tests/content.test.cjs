@@ -6,7 +6,7 @@ const { gzipSync } = require('node:zlib');
 
 function harness() {
   let stored = null;
-  let heading = 'Write this in Esperanto';
+  let heading = 'Write this in German';
   let onKey;
   let onMessage;
   let poll;
@@ -59,12 +59,17 @@ function harness() {
   };
 }
 
-test('gzip course detection, reverse translation, and course switching', async () => {
+test('gzip course detection, German keys, reverse translation, and course switching', async () => {
   const page = harness();
   assert.equal((await page.state()).active, false);
-  page.setCourse({ currentCourseId: 'DUOLINGO_EO_EN', learningLanguage: 'eo', fromLanguage: 'en' });
-  assert.equal((await page.state()).language, 'Esperanto');
-  assert.deepEqual(page.key('x').translated, ['ĉ']);
+  page.setCourse({ currentCourseId: 'DUOLINGO_DE_EN', learningLanguage: 'de', fromLanguage: 'en' });
+  assert.equal((await page.state()).language, 'German');
+  for (const [key, expected] of [['[', 'ü'], ['{', 'Ü'], [';', 'ö'], [':', 'Ö'], ["'", 'ä'], ['"', 'Ä'], ['-', 'ß']]) {
+    assert.deepEqual(page.key(key), { prevented: true, translated: [expected] });
+  }
+  for (const key of ['y', 'Y', 'z', 'Z', '_', ']', '}', '@', '#', '/', '?']) {
+    assert.deepEqual(page.key(key), { prevented: false, translated: [] });
+  }
   assert.equal(page.key('[', { ctrlKey: true }).prevented, false);
   assert.equal(page.key('[', { isComposing: true }).prevented, false);
   page.toggle(false);
@@ -78,7 +83,7 @@ test('gzip course detection, reverse translation, and course switching', async (
   await page.poll();
   await page.state();
   assert.equal(page.decompressions(), count, 'unchanged state is not decompressed again');
-  page.setCourse({ currentCourseId: 'DUOLINGO_EO_EN', learningLanguage: 'eo' });
+  page.setCourse({ currentCourseId: 'DUOLINGO_EO_EN' });
   // A key before the new state finishes decoding must not use the previous map.
   assert.equal(page.key('[').prevented, false);
   assert.equal((await page.state()).language, 'Esperanto');
@@ -88,7 +93,7 @@ test('gzip course detection, reverse translation, and course switching', async (
   const unsupported = await page.state();
   assert.equal(unsupported.course.learningLanguage, 'nl-nl');
   assert.equal(unsupported.active, false);
-  page.setCourse({ currentCourseId: 'DUOLINGO_EO_ES' });
+  page.setCourse({ currentCourseId: 'DUOLINGO_DE_ES' });
   assert.equal((await page.state()).active, false);
   page.corrupt();
   assert.equal((await page.state()).active, false);

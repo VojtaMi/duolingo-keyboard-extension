@@ -11,8 +11,8 @@
       : language
         ? `${language} detected. Open a ${language} challenge to use its keyboard.`
         : course
-          ? 'This course has no keyboard mapping. Supported: Esperanto from English.'
-          : 'Open Duolingo with an Esperanto course from English.';
+          ? 'This course has no keyboard mapping. Supported: German or Esperanto from English.'
+          : 'Open Duolingo with a German or Esperanto course from English.';
     toggle.textContent = enabled ? 'Turn off' : 'Turn on';
     toggle.disabled = !active;
   }

@@ -1,9 +1,9 @@
 # Duolingo Adaptive Keyboard
 
-This local Chromium extension maps a US English QWERTY keyboard to
+This local Chromium extension maps a US English QWERTY keyboard to German or
 Esperanto during Duolingo challenges. It detects your active course from the
-gzip + base64 compressed `duo.state` in localStorage. The course must have
-English as its base language. Unsupported courses leave your keys unchanged.
+gzip + base64 compressed `duo.state` in localStorage. Both courses must have
+English as their base language. Unsupported courses leave your keys unchanged.
 
 Esperanto uses Ubuntu's `epo(basic)` layout:
 
@@ -15,6 +15,19 @@ Esperanto uses Ubuntu's `epo(basic)` layout:
 | [ / { | ĵ / Ĵ |
 | ] / } | ĥ / Ĥ |
 | x / X | ĉ / Ĉ |
+
+German maps only its special characters:
+
+| English key | German |
+| --- | --- |
+| [ / { | ü / Ü |
+| ; / : | ö / Ö |
+| ' / " | ä / Ä |
+| - | ß |
+
+Y/Z and all other keys keep their US English behavior. Characters are inserted
+directly, without dead-key composition. Ctrl, Alt, and Meta shortcuts keep their
+original behavior.
 
 ## Install in Chromium
 
