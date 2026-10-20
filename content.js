@@ -3,11 +3,10 @@
 
   const HEADER_SELECTOR = 'h1[data-test="challenge-header"]';
   const KEYBOARD_BUTTON_SELECTOR = 'button[data-test="player-toggle-keyboard"]';
-  const ESPERANTO_CHARACTERS = /[ĉĝĥĵŝŭ]/i;
-  const ACTIVE_HEADER = /esperanto|^type the missing words?$|^complete the sentence$/i;
+  const GENERIC_HEADER = /^(type the missing words?|complete the sentence)$/i;
 
   // Ubuntu's xkb Esperanto "basic" layout on a US QWERTY keyboard.
-  const KEY_MAP = new Map([
+  const ESPERANTO_KEY_MAP = new Map([
     ['q', 'ŝ'], ['Q', 'Ŝ'],
     ['w', 'ĝ'], ['W', 'Ĝ'],
     ['y', 'ŭ'], ['Y', 'Ŭ'],
@@ -16,17 +15,64 @@
     ['x', 'ĉ'], ['X', 'Ĉ']
   ]);
 
+  const LAYOUTS = {
+    eo: { name: 'Esperanto', characters: /[ĉĝĥĵŝŭ]/i, keys: ESPERANTO_KEY_MAP }
+  };
+
   let enabled = true;
   let active = false;
+  let course = null;
+  let layout = null;
+  let lastStoredState;
+  let courseRead = Promise.resolve();
+  const mappedEvents = new WeakSet();
+
+  function refreshCourse() {
+    let stored;
+    try {
+      stored = localStorage.getItem('duo.state');
+    } catch {
+      stored = null;
+    }
+    if (stored === lastStoredState) return courseRead;
+    lastStoredState = stored;
+    course = null;
+    layout = null;
+    refreshState();
+    courseRead = (async () => {
+      try {
+        if (!stored) return;
+        const bytes = Uint8Array.from(atob(JSON.parse(stored)), (c) => c.charCodeAt(0));
+        const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
+        const user = JSON.parse(await new Response(stream).text()).state.redux.user;
+        const match = /^DUOLINGO_(.+)_([^_]+)$/.exec(user.currentCourseId || '');
+        const learning = String(user.learningLanguage || match?.[1] || '').toLowerCase();
+        const from = String(user.fromLanguage || match?.[2] || '').toLowerCase();
+        if (stored !== lastStoredState) return;
+        course = { currentCourseId: user.currentCourseId, learningLanguage: learning, fromLanguage: from };
+        layout = from === 'en' ? LAYOUTS[learning] || null : null;
+      } catch {
+        // Missing or changed Duolingo state leaves remapping disabled.
+      } finally {
+        refreshState();
+      }
+    })();
+    return courseRead;
+  }
 
   function challengeIsActive() {
+    if (!layout) return false;
     const header = document.querySelector(HEADER_SELECTOR);
-    const hasEsperantoCharacterButton = [...document.querySelectorAll('button')]
-      .some((button) => ESPERANTO_CHARACTERS.test(button.textContent));
+    const heading = header?.textContent.trim() || '';
+    // Explicit reverse translations should keep the English keyboard.
+    if (/\b(?:in|into) English\b/i.test(heading)) return false;
+    const hasCharacterButton = [...document.querySelectorAll('button')]
+      .some((button) => layout.characters.test(button.textContent));
     return Boolean(
-      (header && ACTIVE_HEADER.test(header.textContent.trim())) ||
+      heading.toLowerCase().includes(layout.name.toLowerCase()) ||
+      GENERIC_HEADER.test(heading) ||
       document.querySelector(KEYBOARD_BUTTON_SELECTOR) ||
-      hasEsperantoCharacterButton
+      hasCharacterButton
     );
   }
 
@@ -100,15 +146,18 @@
       altKey: event.altKey,
       metaKey: event.metaKey
     });
+    mappedEvents.add(translated);
     event.target.dispatchEvent(translated);
   }
 
   document.addEventListener('keydown', (event) => {
+    if (mappedEvents.has(event)) return;
+    void refreshCourse();
     refreshState();
     if (!enabled || !active || event.defaultPrevented || event.isComposing) return;
     if (event.ctrlKey || event.altKey || event.metaKey) return;
 
-    const character = KEY_MAP.get(event.key);
+    const character = layout.keys.get(event.key);
     if (!character) return;
 
     const target = editableElement(event.target);
@@ -121,7 +170,7 @@
       insertIntoContentEditable(target, character);
     } else {
       // Duolingo's word-tile view has no input. Let its key handlers see the
-      // Esperanto character instead.
+      // mapped character instead.
       dispatchMappedKey(event, character);
     }
   }, true);
@@ -143,11 +192,18 @@
       enabled = Boolean(message.enabled);
       sendResponse({ enabled });
     } else if (message?.type === 'get-state') {
-      refreshState();
-      sendResponse({ enabled, active });
+      refreshCourse().then(() => {
+        refreshState();
+        sendResponse({ enabled, active, language: layout?.name || null, course });
+      });
     }
     return true;
   });
 
-  refreshState();
+  window.addEventListener('storage', (event) => {
+    if (event.key === 'duo.state' || event.key === null) void refreshCourse();
+  });
+  // Same-tab localStorage writes do not fire storage events.
+  setInterval(refreshCourse, 1000);
+  void refreshCourse();
 })();

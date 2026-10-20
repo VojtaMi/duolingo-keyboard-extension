@@ -2,11 +2,17 @@
   const status = document.querySelector('#status');
   const toggle = document.querySelector('#toggle');
   let enabled = true;
+  let language = null;
+  let course = null;
 
   function render(active) {
     status.textContent = active
-      ? `Esperanto mapping is ${enabled ? 'on' : 'off'}.`
-      : 'Open a “Write this in Esperanto” Duolingo challenge.';
+      ? `${language} mapping is ${enabled ? 'on' : 'off'}.`
+      : language
+        ? `${language} detected. Open a ${language} challenge to use its keyboard.`
+        : course
+          ? 'This course has no keyboard mapping. Supported: Esperanto from English.'
+          : 'Open Duolingo with an Esperanto course from English.';
     toggle.textContent = enabled ? 'Turn off' : 'Turn on';
     toggle.disabled = !active;
   }
@@ -16,6 +22,8 @@
     chrome.tabs.sendMessage(tab.id, { type: 'get-state' }, (response) => {
       if (chrome.runtime.lastError || !response) return render(false);
       enabled = response.enabled;
+      language = response.language;
+      course = response.course;
       render(response.active);
     });
   });
