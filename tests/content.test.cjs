@@ -64,10 +64,10 @@ test('gzip course detection, German keys, reverse translation, and course switch
   assert.equal((await page.state()).active, false);
   page.setCourse({ currentCourseId: 'DUOLINGO_DE_EN', learningLanguage: 'de', fromLanguage: 'en' });
   assert.equal((await page.state()).language, 'German');
-  for (const [key, expected] of [['[', 'ü'], ['{', 'Ü'], [';', 'ö'], [':', 'Ö'], ["'", 'ä'], ['"', 'Ä'], ['-', 'ß']]) {
+  for (const [key, expected] of [['[', 'ü'], ['{', 'Ü'], [';', 'ö'], [':', 'Ö'], ["'", 'ä'], ['"', 'Ä'], ['-', 'ß'], [']', "'"], ['}', '"']]) {
     assert.deepEqual(page.key(key), { prevented: true, translated: [expected] });
   }
-  for (const key of ['y', 'Y', 'z', 'Z', '_', ']', '}', '@', '#', '/', '?']) {
+  for (const key of ['y', 'Y', 'z', 'Z', '_', '@', '#', '/', '?']) {
     assert.deepEqual(page.key(key), { prevented: false, translated: [] });
   }
   assert.equal(page.key('[', { ctrlKey: true }).prevented, false);

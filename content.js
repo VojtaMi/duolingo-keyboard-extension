@@ -18,7 +18,8 @@
   // German special characters on a US QWERTY keyboard.
   const GERMAN_KEY_MAP = new Map([
     ['[', 'ü'], ['{', 'Ü'], [';', 'ö'], [':', 'Ö'],
-    ["'", 'ä'], ['"', 'Ä'], ['-', 'ß']
+    ["'", 'ä'], ['"', 'Ä'], ['-', 'ß'],
+    [']', "'"], ['}', '"']
   ]);
   const LAYOUTS = {
     eo: { name: 'Esperanto', characters: /[ĉĝĥĵŝŭ]/i, keys: ESPERANTO_KEY_MAP },

@@ -24,6 +24,7 @@ German maps only its special characters:
 | ; / : | ö / Ö |
 | ' / " | ä / Ä |
 | - | ß |
+| ] / } | ' / " |
 
 Y/Z and all other keys keep their US English behavior. Characters are inserted
 directly, without dead-key composition. Ctrl, Alt, and Meta shortcuts keep their
